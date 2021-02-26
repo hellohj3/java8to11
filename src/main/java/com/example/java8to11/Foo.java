@@ -1,6 +1,9 @@
 package com.example.java8to11;
 
-import java.time.Duration;
+import java.text.SimpleDateFormat;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
@@ -184,6 +187,7 @@ public class Foo {
                 .collect(Collectors.toList());
         includeSpringClasses.forEach(System.out::println); */
 
+        /* Optional api
         List<OnlineClass> springClasses = new ArrayList<>();
         springClasses.add(new OnlineClass(1, "spring boot", true));
         springClasses.add(new OnlineClass(2, "spring data jpa", true));
@@ -199,7 +203,85 @@ public class Foo {
         }
 
         // Optional 사용 버전 - Optional은 return 으로만 사용하자 !!
-        Optional<Progress> progress1 = spring_security.getProgress();
+        Optional<Progress> progress1 = spring_security.getOptional();
+
+        Optional<OnlineClass> optional = springClasses.stream()
+                .filter(oc -> oc.getTitle().startsWith("spring"))
+                .findFirst();
+
+        boolean springPresent = optional.isPresent();
+        System.out.println("present = " + springPresent);
+
+        boolean empty = optional.isEmpty();
+        System.out.println("empty = " + empty);
+
+        // OnlineClass onlineClass = optional.get();       // 이케쓰면 안됨, 비어있을때 런타임 익셉션
+        // System.out.println("onlineClass = " + onlineClass.getTitle());
+
+        optional.ifPresent(oc -> System.out.println("oc.getTitle() = " + oc.getTitle()));
+
+        // 이건 무조건 createNewClass() 가 실행이됨(물론 리턴값을 반영하지는 않음) - 상수 꽂아넣을때 쓰면 좋음
+        OnlineClass orElseClass = optional.orElse(createNewClass());
+        System.out.println("orElseClass.getTitle() = " + orElseClass.getTitle());
+
+        // 위에꺼 개선 버전 - 동적 처리에 좋음
+        OnlineClass orElseGetClass = optional.orElseGet(() -> createNewClass());
+        System.out.println("orElseGetClass.getTitle() = " + orElseGetClass.getTitle());
+        
+        // 있다는 가정하에 동작 없으면 아무일도 일어나지 않음
+        Optional<OnlineClass> filterClass = optional.filter(oc -> oc.getId() > 10);
+        System.out.println("filterClass.isEmpty() = " + filterClass.isEmpty());
+
+        // map - 이경우에 map 되는 값이 Optional 이면 이중 Optional 이 되서 복잡해짐
+        Optional<Integer> integer = optional.map(OnlineClass::getId);
+        System.out.println("integer.isPresent() = " + integer.isPresent());
+        Optional<Optional<Progress>> optionalProgressMap = optional.map(OnlineClass::getOptional);
+        Optional<Progress> optionalProgressEmpty = optionalProgressMap.orElse(Optional.empty());
+
+        // flatmap - 위의 단점을 보완해서 풀어해치는 메서드 (스트림이랑 좀 다름)
+        Optional<Progress> optionalProgressFlatMap = optional.flatMap(OnlineClass::getOptional); */
+
+        // Java 8 이전 날짜 관련 클래스 - 개같은 것들...
+        Date date = new Date();
+        Calendar calendar = new GregorianCalendar();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+
+        // Java 8 이후 날짜 관련 클래스
+        Instant instant = Instant.now();    // 머신타임 UTC, GMT
+        System.out.println("instant = " + instant);
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        System.out.println("zoneId = " + zoneId);
+        ZonedDateTime zonedDateTime = instant.atZone(zoneId);
+        System.out.println("zonedDateTime = " + zonedDateTime); // 머신차임 시스템기반
+
+        LocalDateTime localNow = LocalDateTime.now();    // 휴먼타임 - 시스템기반(서버 베이스)
+        System.out.println("now = " + localNow);
+
+        LocalDateTime createDate = LocalDateTime.of(1989, Month.OCTOBER, 1, 23, 30, 0); // 휴먼타임 - 임의의 날짜정보 생성
+        System.out.println("createDate = " + createDate);
+
+        ZonedDateTime nowInKorea = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));  // 휴먼타임 - 특정 존의 데이트를 리턴
+        System.out.println("nowInKorea = " + nowInKorea);
+        
+        LocalDate today = LocalDate.now();
+        LocalDate thisYearBirthday = LocalDate.of(2021, Month.OCTOBER, 1);
+        Period birthPeriod = Period.between(today, thisYearBirthday);
+        System.out.println("birthPeriod.getDays() = " + birthPeriod.getDays());
+        System.out.println("today.until(thisYearBirthday).get(ChronoUnit.DAYS) = " + today.until(thisYearBirthday).get(ChronoUnit.DAYS));
+        System.out.println("today = " + today);
+
+        LocalDateTime nowDateTiem = LocalDateTime.now();
+        System.out.println("nowDateTiem = " + nowDateTiem);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        System.out.println("nowDateTiem.format(dateTimeFormatter) = " + nowDateTiem.format(dateTimeFormatter));
+        System.out.println("LocalDate.parse() = " + LocalDate.parse("10/01/1989", dateTimeFormatter));
+    }
+    
+
+    private static OnlineClass createNewClass() {
+        System.out.println("--creating new online class--");
+        return new OnlineClass(10, "New class", false);
     }
 
     private void run() {
